@@ -1,0 +1,50 @@
+html
+  // border-box box model allows us to add padding and border to our elements without increasing their size
+  box-sizing: border-box
+
+  // WAT IS THIS?!
+  // We inherit box-sizing: border-box from our <html> selector
+*,
+*:before,
+*:after
+  box-sizing: inherit
+
+
+a, abbr, acronym, address, applet, aside, audio, b, big, blockquote, body,
+canvas, caption, center, cite, code, dd, del, details, dfn, div, dl, dt,
+em, embed, fieldset, figcaption, figure, font, footer, form, h1, h2, h3,
+h4, h5, h6, header, hgroup, html, i, iframe, img, ins, kbd, label, legend,
+li, mark, menu, nav, object, ol, output, p, pre, q, ruby, s, samp, section,
+small, span, strike, strong, sub, summary, sup, table, tbody, td article,
+tfoot, th, thead, time, tr, tt, u, ul, var, video
+  margin: 0
+  padding: 0
+  border: 0
+
+\:focus 
+  outline: none
+
+
+h1, h2, h3, h4, h5, h6 
+  font-weight: normal
+
+
+html, body 
+  -webkit-text-size-adjust: 100%
+  -webkit-font-smoothing: antialiased
+  -webkit-tap-highlight-color: rgba(0,0,0,0)
+  text-shadow: 1px 1px 1px rgba(0,0,0,0.004)
+
+
+body 
+  background: #fff
+
+
+::selection 
+  background: #f21b3f
+  color: #fff
+
+
+a 
+  text-decoration: none
+  color: inherit
