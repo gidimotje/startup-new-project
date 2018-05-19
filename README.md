@@ -10,3 +10,4 @@ All the files needed for a local development environment.
 
 ## Alter after building
 1. GENURL in build/assets/includes/config.php line 3
+2. remove '.php' extentions in build/assets/includes/header.php from line 12 onward
