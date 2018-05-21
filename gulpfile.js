@@ -1,5 +1,5 @@
 //initialize all of our variables
-var app, base, concat, directory, gulp, gutil, hostname, path, refresh, sass, uglify, imagemin, minifyCSS, del, rename, browserSync, autoprefixer, gulpSequence, shell, sourceMaps, plumber;
+var app, base, concat, directory, gulp, gutil, hostname, path, refresh, sass, uglify, imagemin, minifyCSS, del, rename, browserSync, autoprefixer, gulpSequence, shell, sourceMaps, plumber, newer;
 
 var autoPrefixBrowserList = ['last 2 version', 'safari 5', 'ie 8', 'ie 9', 'opera 12.1', 'ios 6', 'android 4'];
 
@@ -17,6 +17,7 @@ browserSync = require('browser-sync').create();
 autoprefixer = require('gulp-autoprefixer');
 plumber     = require('gulp-plumber');
 rename      = require('gulp-rename');
+newer       = require('gulp-newer');
 gulpSequence = require('gulp-sequence').use(gulp);
 
 // paths
@@ -29,21 +30,76 @@ var styleSrc = 'source/sass/**/*.sass',
     scriptSrc = 'source/js/*.js',
     scriptDest = 'build/assets/js/';
 
+dir = {
+    src         : 'source/',
+    build       : 'build/'
+  };
 
-gulp.task('browserSync', function() {
-    browserSync.init({
-        proxy: "http://localhost/build",
-        options: {
-            reloadDelay: 250
-        },
-        notify: false,
-    });
+// Browser-sync
+var browsersync = false;
 
-    gulp.watch(styleSrc,['sass']);
-    gulp.watch(scriptSrc,['scripts']);
-    gulp.watch(vendorSrc,['vendors']);
-    gulp.watch(['build/*.php', 'build/assets/css/*.css', 'build/assets/js/*.js', 'build/assets/js/vendors/*.js']).on('change', browserSync.reload);
+// PHP settings
+const php = {
+  src           : dir.src + 'pages/**/*.php',
+  build         : dir.build
+};
+
+// copy PHP files
+gulp.task('php', () => {
+  return gulp.src(php.src)
+    .pipe(newer(php.build))
+    .pipe(gulp.dest(php.build));
 });
+
+// Browsersync options
+const syncOpts = {
+  proxy       : 'localhost',
+  files       : dir.build + '**/*',
+  open        : false,
+  notify      : false,
+  ghostMode   : false,
+  ui: {
+    port: 8001
+  }
+};
+
+
+// browser-sync
+gulp.task('browsersync', () => {
+  if (browsersync === false) {
+    browsersync = require('browser-sync').create();
+    browsersync.init(syncOpts);
+  }
+});
+
+// watch for file changes
+gulp.task('watch', ['browsersync'], () => {
+
+  // page changes
+  gulp.watch(php.src, ['php'], browsersync ? browsersync.reload : {});
+
+  gulp.watch(styleSrc,['sass']);
+  gulp.watch(scriptSrc,['scripts']);
+  gulp.watch(vendorSrc,['vendors']);
+
+});
+
+// gulp.task('browserSync', function() {
+//     browserSync.init({
+//         proxy: "http://localhost/",
+//         open: 'external',
+//         options: {
+//             reloadDelay: 250,
+//             extensions: ['php']
+//         },
+//         notify: false,
+//     });
+
+//     gulp.watch(styleSrc,['sass']);
+//     gulp.watch(scriptSrc,['scripts']);
+//     gulp.watch(vendorSrc,['vendors']);
+//     gulp.watch(['build/*.php', 'build/assets/css/*.css', 'build/assets/js/*.js', 'build/assets/js/vendors/*.js']).on('change', browserSync.reload);
+// });
 
 // Compiles all SASS files
 gulp.task('sass', function() {
@@ -88,14 +144,14 @@ gulp.task('vendors', function() {
 });
 
 //basically just keeping an eye on all HTML files
-gulp.task('html', function() {
-    //watch any and all HTML files and refresh when something changes
-    return gulp.src('build/*.php')
-        .pipe(plumber())
-        .pipe(browserSync.reload({stream: true}))
-        //catch errors
-        .on('error', gutil.log);
-});
+// gulp.task('html', function() {
+//     //watch any and all HTML files and refresh when something changes
+//     return gulp.src('build/*.php')
+//         .pipe(plumber())
+//         .pipe(browserSync.reload({stream: true}))
+//         //catch errors
+//         .on('error', gutil.log);
+// });
 
 
 //this is our master task when you run `gulp` in CLI / Terminal
@@ -104,7 +160,4 @@ gulp.task('html', function() {
 //  startup the web server,
 //  start up browserSync
 //  compress all scripts and SCSS files
-gulp.task('default', ['browserSync', 'sass', 'scripts', 'vendors'], function() {});
-
-//this is our deployment task, it will set everything for deployment-ready files
-gulp.task('deploy', gulpSequence(['scripts-deploy', 'styles-deploy', 'images-deploy'], 'html-deploy'));
+gulp.task('default', ['watch', 'sass', 'scripts', 'vendors'], function() {});
